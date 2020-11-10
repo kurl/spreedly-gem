@@ -26,6 +26,7 @@ class VerifyTest < Test::Unit::TestCase
     assert_equal 'Tax Free Zone', t.merchant_location_descriptor
     assert_equal 'LoxFMxQJD5E1ksAwFWykUamaCKE', t.gateway_token
     assert_equal "49", t.gateway_transaction_id
+    assert_equal 'Verification', t.transaction_type
 
     assert_equal '98626DYInHb4K86dp6GrocnZOW6', t.payment_method.token
     assert_equal 'Aybara', t.payment_method.last_name
@@ -57,7 +58,8 @@ class VerifyTest < Test::Unit::TestCase
       [ './ip', '183.128.100.102' ],
       [ './merchant_name_descriptor', 'TRain' ],
       [ './merchant_location_descriptor', 'British Colombia' ],
-      [ './retain_on_success', 'true' ]
+      [ './retain_on_success', 'true' ],
+      [ './continue_caching', 'true']
   end
 
 
@@ -74,7 +76,8 @@ class VerifyTest < Test::Unit::TestCase
       ip: "183.128.100.102",
       merchant_name_descriptor: "TRain",
       merchant_location_descriptor: "British Colombia",
-      retain_on_success: true
+      retain_on_success: true,
+      continue_caching: true
     }
   end
 

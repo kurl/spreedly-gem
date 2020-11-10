@@ -2,6 +2,8 @@
 
 A convenient Ruby wrapper for the Spreedly API.
 
+This is an example Ruby integration with Spreedly. This version is no longer actively updated and will be superseded by a new version in the near future. Feature parity may lag behind, so please use this gem at your own risk.
+
 ## Philosophy
 
 * No global configuration of authentication credentials.
@@ -181,6 +183,12 @@ env.purchase_on_gateway(gateway_token, payment_method_token, amount,
                        )
 ```
 
+#### Complete a transaction (3DS 2)
+
+```ruby
+env.complete_transaction(transaction_token)
+```
+
 #### Retain on success
 Retain a payment method automatically if the purchase, verify, or authorize transaction succeeded.  Saves you a separate call to retain:
 
@@ -322,6 +330,19 @@ You can get the full list of supported receivers like so:
 env.receiver_options
 ```
 
+#### Delivering a payment method
+
+You can deliver a payment method to a third party using [Payment Method Distribution](https://docs.spreedly.com/guides/payment-method-distribution/). Once a receiver is set up and you have a payment method that you would like to share, you can use the following call:
+
+```ruby
+env.deliver_to_receiver(
+  "receiver token goes here",
+  "payment method token goes here",
+  headers: { "Content-Type": "application/json" },
+  url: "https://spreedly-echo.herokuapp.com",
+  body: { card_number: "{{credit_card_number}}" }.to_json
+)
+```
 
 ## Error Handling
 
@@ -409,3 +430,7 @@ There are two rake tasks to help run the tests:
 rake test:remote  # Run remote tests that actually hit the Spreedly site
 rake test:units   # Run unit tests
 ```
+
+To run remote tests you'll need to copy `test/credentials/credentials.yml.example` to `test/credentials/credentials.yml` and update the values of `environment_key` and `access_secret`.
+
+When you're happy with your change, don't forget to add your contributions to CHANGELOG.md. We follow the changelog format found [here](https://keepachangelog.com/en/1.0.0/).

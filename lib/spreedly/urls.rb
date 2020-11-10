@@ -1,7 +1,5 @@
 module Spreedly
-
   module Urls
-
     def find_payment_method_url(token)
       "#{base_url}/v1/payment_methods/#{token}.xml"
     end
@@ -12,6 +10,10 @@ module Spreedly
 
     def find_transcript_url(transaction_token)
       "#{base_url}/v1/transactions/#{transaction_token}/transcript"
+    end
+
+    def complete_transaction_url(token)
+      "#{base_url}/v1/transactions/#{token}/complete.xml"
     end
 
     def find_gateway_url(token)
@@ -62,11 +64,20 @@ module Spreedly
       "#{base_url}/v1/gateways/#{gateway_token}/store.xml"
     end
 
-    def list_transactions_url(since_token, payment_method_token)
-      since_param = "?since_token=#{since_token}" if since_token
-      return "#{base_url}/v1/transactions.xml#{since_param}" unless payment_method_token
+    def list_transactions_url(since_token, payment_method_token, options = {})
+      options.each do |key, val|
+        options[key.to_sym] = val
+      end
 
-      "#{base_url}/v1/payment_methods/#{payment_method_token}/transactions.xml#{since_param}"
+      params = []
+      params << "since_token=#{since_token}" if since_token
+      params << "count=#{options[:count]}" if options[:count]
+      params << "order=#{options[:order]}" if options[:order]
+      params << "state=#{options[:state]}" if options[:state]
+      param_string = "?#{params.join('&')}" if params.any?
+      return "#{base_url}/v1/transactions.xml#{param_string}" unless payment_method_token
+
+      "#{base_url}/v1/payment_methods/#{payment_method_token}/transactions.xml#{param_string}"
     end
 
     def list_payment_methods_url(since_token)
@@ -95,6 +106,10 @@ module Spreedly
       "#{base_url}/v1/receivers.xml"
     end
 
+    def redact_receiver_url(token)
+      "#{base_url}/v1/receivers/#{token}/redact.xml"
+    end
+
     def add_payment_method_url
       "#{base_url}/v1/payment_methods.xml"
     end
@@ -106,7 +121,5 @@ module Spreedly
     def deliver_to_receiver_url(receiver_token)
       "#{base_url}/v1/receivers/#{receiver_token}/deliver.xml"
     end
-
   end
-
 end

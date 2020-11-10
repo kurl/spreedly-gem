@@ -30,7 +30,8 @@ module Spreedly
     end
 
     def find_transcript(transaction_token)
-      ssl_raw_get(find_transcript_url(transaction_token), headers)
+      transcript_url = find_transcript_url(transaction_token)
+      ssl_raw_get(transcript_url, headers)
     end
 
     def find_gateway(token)
@@ -46,6 +47,10 @@ module Spreedly
     def authorize_on_gateway(gateway_token, payment_method_token, amount, options = {})
       body = auth_purchase_body(amount, payment_method_token, options)
       api_post(authorize_url(gateway_token), body)
+    end
+
+    def complete_transaction(transaction_token)
+      api_post(complete_transaction_url(transaction_token), '')
     end
 
     def verify_on_gateway(gateway_token, payment_method_token, options = {})
@@ -87,8 +92,13 @@ module Spreedly
       Transaction.new_from(xml_doc)
     end
 
-    def list_transactions(since_token = nil, payment_method_token = nil)
-      xml_doc = ssl_get(list_transactions_url(since_token, payment_method_token), headers)
+    def redact_receiver(receiver_token, options = {})
+      xml_doc = ssl_put(redact_receiver_url(receiver_token), '', headers)
+      Transaction.new_from(xml_doc)
+    end
+
+    def list_transactions(since_token = nil, payment_method_token = nil, options = {})
+      xml_doc = ssl_get(list_transactions_url(since_token, payment_method_token, options), headers)
       Transaction.new_list_from(xml_doc)
     end
 
@@ -166,6 +176,8 @@ module Spreedly
         doc.currency_code(options[:currency_code] || currency_code)
         doc.payment_method_token(payment_method_token)
         add_to_doc(doc, options, :retain_on_success)
+        add_to_doc(doc, options, :stored_credential_initiator)
+        add_to_doc(doc, options, :stored_credential_reason_type)
         add_extra_options_for_basic_ops(doc, options)
       end
     end
@@ -296,7 +308,8 @@ module Spreedly
       add_gateway_specific_fields(doc, options)
       add_shipping_address_override(doc, options)
       add_to_doc(doc, options, :order_id, :description, :ip, :email, :merchant_name_descriptor,
-                               :merchant_location_descriptor, :redirect_url, :callback_url)
+                               :merchant_location_descriptor, :redirect_url, :callback_url,
+                               :continue_caching, :attempt_3dsecure, :browser_info, :three_ds_version, :channel)
     end
 
     def add_gateway_specific_fields(doc, options)
@@ -332,6 +345,5 @@ module Spreedly
       xml_doc = ssl_post(url, body, headers, talking_to_gateway)
       Transaction.new_from(xml_doc)
     end
-
   end
 end
